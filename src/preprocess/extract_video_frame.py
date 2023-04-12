@@ -11,7 +11,7 @@ import numpy as np
 from PIL import Image
 import torchvision.transforms as T
 from torchvision.utils import save_image
-
+from tqdm import tqdm
 preprocess = T.Compose([
     T.Resize(224),
     T.CenterCrop(224),
@@ -41,17 +41,19 @@ def extract_frame(input_video_path, target_fold, extract_frame_num=10):
 if __name__ == "__main__":
     from argparse import ArgumentParser
     parser = ArgumentParser(description="Python script to extract frames from a video, save as jpgs.")
-    parser.add_argument("-input_file_list", type=str, default='sample_video_extract_list.csv', help="Should be a csv file of a single columns, each row is the input video path.")
-    parser.add_argument("-target_fold", type=str, default='./sample_frames/', help="The place to store the video frames.")
+    parser.add_argument("-input_file_list", type=str, default='/data03/shichengshun-slurm/dataset/vggsound/scratch/shared/beegfs/hchen/train_data/VGGSound_final/video', help="Should be a csv file of a single columns, each row is the input video path.")
+    parser.add_argument("-target_fold", type=str, default='/data03/shichengshun-slurm/dataset/vggsound/scratch/shared/beegfs/hchen/train_data/VGGSound_final/sample_frames', help="The place to store the video frames.")
     args = parser.parse_args()
 
     # note the first row (header) is skipped
-    input_filelist = np.loadtxt(args.input_file_list, dtype=str, delimiter=',')
-    num_file = input_filelist.shape[0]
+    # input_filelist = np.loadtxt(args.input_file_list, dtype=str, delimiter=',')
+    input_filelist = os.listdir(args.input_file_list)  # list
+    num_file = len(input_filelist)
     print('Total {:d} videos are input'.format(num_file))
-    for file_id in range(num_file):
+    for file_id in tqdm(input_filelist):
         try:
-            print('processing video {:d}: {:s}'.format(file_id, input_filelist[file_id]))
-            extract_frame(input_filelist[file_id], args.target_fold)
+            # print('processing video {:d}: {:s}'.format(file_id, input_filelist[file_id]))
+            file_id = os.path.join(args.input_file_list, file_id)
+            extract_frame(file_id, args.target_fold)
         except:
-            print('error with ', print(input_filelist[file_id]))
+            print('error with ', print(file_id))
